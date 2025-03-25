@@ -229,8 +229,11 @@ export class Game {
       }
     });
     
-    // Si todas las bolas cayeron, perdemos una vida
-    if (activeBalls.length === 0 || (activeBalls.length === this.balls.length && !this.balls.some(ball => ball.inPlay))) {
+    // Si todas las bolas en juego cayeron (y había al menos una bola en juego antes), perdemos una vida
+    const hadActiveBalls = this.balls.some(ball => ball.inPlay);
+    const noActiveBallsNow = !activeBalls.some(ball => ball.inPlay);
+    
+    if (hadActiveBalls && noActiveBallsNow) {
       this.gameState.lives--;
       
       if (this.gameState.lives <= 0) {
