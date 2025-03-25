@@ -18,6 +18,26 @@ export class PowerUp {
     this.height = 12;
     this.speed = GAME_CONFIG.powerUps.fallSpeed;
     this.active = true;
+    
+    // Definir colores para los diferentes tipos de power-up
+    this.colors = {
+      'expand-paddle': '#FF88FF', // Rosa
+      'shrink-paddle': '#FF4444', // Rojo
+      'slow-ball': '#44FF44',     // Verde
+      'fast-ball': '#FFFF44',     // Amarillo
+      'multi-ball': '#44FFFF',    // Cyan
+      'extra-life': '#FF88FF'     // Rosa (vida extra)
+    };
+    
+    // Caracteres para identificar cada power-up
+    this.labels = {
+      'expand-paddle': 'E',
+      'shrink-paddle': 'S',
+      'slow-ball': '-',
+      'fast-ball': '+',
+      'multi-ball': 'M',
+      'extra-life': '♥'
+    };
   }
 
   /**
@@ -64,35 +84,58 @@ export class PowerUp {
   /**
    * Dibuja el power-up en el canvas si está activo
    * @param {CanvasRenderingContext2D} ctx - Contexto del canvas
-   * @param {HTMLImageElement} spriteImg - Imagen de sprites
    */
-  draw(ctx, spriteImg) {
+  draw(ctx) {
     if (!this.active) return;
     
-    const spritePos = GAME_CONFIG.spritePositions.powerUps[this.type];
+    const color = this.colors[this.type] || '#FFFFFF';
+    const label = this.labels[this.type] || '?';
     
-    // Si el sprite no existe para este tipo, usamos uno genérico
-    if (!spritePos) {
-      // Dibujar un power-up genérico
-      ctx.fillStyle = 'white';
-      ctx.fillRect(this.x, this.y, this.width, this.height);
-      return;
-    }
+    // Efecto de parpadeo
+    const alpha = 0.7 + Math.sin(Date.now() / 200) * 0.3;
     
-    // Dibujar el power-up desde el spritesheet
-    ctx.drawImage(
-      spriteImg,
-      spritePos.x, spritePos.y,
-      spritePos.width, spritePos.height,
+    // Dibujamos la cápsula del power-up
+    ctx.fillStyle = color;
+    this._drawCapsule(ctx);
+    
+    // Dibujar borde
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(this.x, this.y, this.width, this.height);
+    
+    // Dibujar texto identificativo
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, this.x + this.width / 2, this.y + this.height / 2);
+    
+    // Restaurar configuración
+    ctx.textAlign = 'start';
+    ctx.textBaseline = 'alphabetic';
+  }
+  
+  /**
+   * Dibuja la cápsula del power-up con efecto de brillo
+   * @param {CanvasRenderingContext2D} ctx - Contexto del canvas
+   * @private
+   */
+  _drawCapsule(ctx) {
+    // Dibujar fondo de la cápsula
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+    
+    // Crear gradiente para efecto de brillo
+    const gradient = ctx.createLinearGradient(
       this.x, this.y,
-      this.width, this.height
+      this.x, this.y + this.height
     );
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+    gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
     
-    // Opcional: Añadir un efecto de brillo o parpadeo
-    if (Math.random() > 0.7) {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
+    // Aplicar gradiente
+    ctx.fillStyle = gradient;
+    ctx.fillRect(this.x, this.y, this.width, this.height);
   }
 
   /**

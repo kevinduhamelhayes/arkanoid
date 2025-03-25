@@ -147,17 +147,20 @@ export class Ball {
   /**
    * Dibuja la bola en el canvas
    * @param {CanvasRenderingContext2D} ctx - Contexto del canvas
-   * @param {HTMLImageElement} spriteImg - Imagen de sprites
    */
-  draw(ctx, spriteImg) {
-    const ballSprite = GAME_CONFIG.spritePositions.ball;
+  draw(ctx) {
+    // Dibujamos un círculo para la bola
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#FFFFFF'; // Bola blanca como en el juego original
+    ctx.fill();
+    ctx.closePath();
     
-    ctx.drawImage(
-      spriteImg,
-      ballSprite.x, ballSprite.y,
-      ballSprite.width, ballSprite.height,
-      this.x - this.radius, this.y - this.radius,
-      this.radius * 2, this.radius * 2
-    );
+    // Añadimos un pequeño brillo para darle efecto 3D
+    ctx.beginPath();
+    ctx.arc(this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fill();
+    ctx.closePath();
   }
 } 

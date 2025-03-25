@@ -36,7 +36,7 @@ export class Game {
       leftPressed: false
     };
     
-    // Inicializamos el cargador de recursos
+    // Inicializamos el cargador de recursos (ya no necesitamos cargar sprites)
     this.assetLoader = new AssetLoader();
     
     // Creamos los componentes del juego
@@ -47,7 +47,7 @@ export class Game {
     
     // Inicializamos los eventos y recursos
     this._setupEventListeners();
-    this._loadAssets();
+    this._initializeGame();
   }
 
   /**
@@ -129,18 +129,20 @@ export class Game {
   }
 
   /**
-   * Carga los recursos del juego
+   * Inicializa el juego
    * @private
    */
-  _loadAssets() {
-    // Cargamos el sprite principal y la imagen de ladrillos separada
-    this.assetLoader.addImage('sprite', 'sprite.png');
-    this.assetLoader.addImage('bricks', 'bricks.png');
+  _initializeGame() {
+    // Creamos los ladrillos directamente
+    this._createBricks();
+    // Iniciamos el bucle del juego
+    this._startGameLoop();
     
-    this.assetLoader.onLoadComplete(() => {
-      this._createBricks();
-      this._startGameLoop();
-    });
+    // Registramos las instrucciones en la consola
+    console.log('Controles:');
+    console.log('- Usa las flechas izquierda/derecha o el ratón para mover la paleta');
+    console.log('- Presiona Espacio para lanzar la bola');
+    console.log('- Presiona P para pausar/reanudar el juego');
   }
 
   /**
@@ -181,12 +183,6 @@ export class Game {
     
     // Iniciamos el bucle
     gameLoop();
-    
-    // Registramos las instrucciones en la consola
-    console.log('Controles:');
-    console.log('- Usa las flechas izquierda/derecha o el ratón para mover la paleta');
-    console.log('- Presiona Espacio para lanzar la bola');
-    console.log('- Presiona P para pausar/reanudar el juego');
   }
 
   /**
@@ -404,24 +400,49 @@ export class Game {
     // Limpiar el canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
-    // Obtenemos las imágenes necesarias
-    const spriteImg = this.assetLoader.getImage('sprite');
-    const bricksImg = this.assetLoader.getImage('bricks');
+    // Dibujar fondo
+    this._drawBackground();
     
-    // Dibujar los ladrillos usando la imagen de ladrillos
-    this.bricks.forEach(brick => brick.draw(this.ctx, bricksImg));
+    // Dibujar los ladrillos
+    this.bricks.forEach(brick => brick.draw(this.ctx));
     
     // Dibujar los power-ups
-    this.powerUps.forEach(powerUp => powerUp.draw(this.ctx, spriteImg));
+    this.powerUps.forEach(powerUp => powerUp.draw(this.ctx));
     
     // Dibujar la paleta
-    this.paddle.draw(this.ctx, spriteImg);
+    this.paddle.draw(this.ctx);
     
     // Dibujar las bolas
-    this.balls.forEach(ball => ball.draw(this.ctx, spriteImg));
+    this.balls.forEach(ball => ball.draw(this.ctx));
     
     // Dibujar la interfaz
     this._drawUI();
+  }
+  
+  /**
+   * Dibuja el fondo del juego
+   * @private
+   */
+  _drawBackground() {
+    // Crear un gradiente para el fondo
+    const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+    gradient.addColorStop(0, '#000044');
+    gradient.addColorStop(1, '#000022');
+    
+    // Dibujar el fondo
+    this.ctx.fillStyle = gradient;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Opcional: añadir estrellas para el fondo espacial
+    for (let i = 0; i < 50; i++) {
+      const x = Math.random() * this.canvas.width;
+      const y = Math.random() * this.canvas.height;
+      const size = Math.random() * 2 + 1;
+      const alpha = Math.random() * 0.8 + 0.2;
+      
+      this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      this.ctx.fillRect(x, y, size, size);
+    }
   }
 
   /**

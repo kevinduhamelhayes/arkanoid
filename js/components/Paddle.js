@@ -16,6 +16,20 @@ export class Paddle {
     this.speed = GAME_CONFIG.paddle.speed;
     this.state = 'normal'; // normal, expanded, shrunk
     this.powerUpTimer = null;
+    
+    // Definimos los colores para los diferentes estados
+    this.colors = {
+      normal: '#0088FF',    // Azul
+      expanded: '#44AAFF',  // Azul claro
+      shrunk: '#0066CC'     // Azul oscuro
+    };
+    
+    // Dimensiones según el estado
+    this.dimensions = {
+      normal: { width: GAME_CONFIG.paddle.width, height: GAME_CONFIG.paddle.height },
+      expanded: { width: GAME_CONFIG.paddle.width * 1.5, height: GAME_CONFIG.paddle.height },
+      shrunk: { width: GAME_CONFIG.paddle.width * 0.75, height: GAME_CONFIG.paddle.height }
+    };
   }
 
   /**
@@ -70,11 +84,11 @@ export class Paddle {
     switch (powerUpType) {
       case 'expand-paddle':
         this.state = 'expanded';
-        this.width = GAME_CONFIG.spritePositions.paddle.expanded.width;
+        this.width = this.dimensions.expanded.width;
         break;
       case 'shrink-paddle':
         this.state = 'shrunk';
-        this.width = GAME_CONFIG.spritePositions.paddle.shrunk.width;
+        this.width = this.dimensions.shrunk.width;
         break;
       default:
         return; // Si no es un power-up para la paleta, salimos
@@ -91,36 +105,58 @@ export class Paddle {
    */
   resetState() {
     this.state = 'normal';
-    this.width = GAME_CONFIG.paddle.width;
+    this.width = this.dimensions.normal.width;
   }
 
   /**
    * Dibuja la paleta en el canvas
    * @param {CanvasRenderingContext2D} ctx - Contexto del canvas
-   * @param {HTMLImageElement} spriteImg - Imagen de sprites
    */
-  draw(ctx, spriteImg) {
-    let spritePos;
-    
-    // Seleccionamos la parte correcta del sprite según el estado
-    switch (this.state) {
-      case 'expanded':
-        spritePos = GAME_CONFIG.spritePositions.paddle.expanded;
-        break;
-      case 'shrunk':
-        spritePos = GAME_CONFIG.spritePositions.paddle.shrunk;
-        break;
-      default:
-        spritePos = GAME_CONFIG.spritePositions.paddle.normal;
-    }
-    
-    // Dibujamos la paleta
-    ctx.drawImage(
-      spriteImg,
-      spritePos.x, spritePos.y,
-      spritePos.width, spritePos.height,
+  draw(ctx) {
+    const gradient = ctx.createLinearGradient(
       this.x, this.y,
-      this.width, this.height
+      this.x, this.y + this.height
     );
+    gradient.addColorStop(0, this.colors[this.state]);
+    gradient.addColorStop(0.5, '#FFFFFF');
+    gradient.addColorStop(1, this.colors[this.state]);
+    
+    // Dibujamos el cuerpo principal de la paleta
+    ctx.fillStyle = gradient;
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+    
+    // Añadimos bordes para dar sensación de profundidad
+    
+    // Parte superior e izquierda (más clara)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x + this.width, this.y);
+    ctx.lineTo(this.x + this.width - 2, this.y + 2);
+    ctx.lineTo(this.x + 2, this.y + 2);
+    ctx.lineTo(this.x + 2, this.y + this.height - 2);
+    ctx.lineTo(this.x, this.y + this.height);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Parte inferior y derecha (más oscura)
+    ctx.fillStyle = '#0044AA';
+    ctx.beginPath();
+    ctx.moveTo(this.x + this.width, this.y);
+    ctx.lineTo(this.x + this.width, this.y + this.height);
+    ctx.lineTo(this.x, this.y + this.height);
+    ctx.lineTo(this.x + 2, this.y + this.height - 2);
+    ctx.lineTo(this.x + this.width - 2, this.y + this.height - 2);
+    ctx.lineTo(this.x + this.width - 2, this.y + 2);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Añadimos detalles a la paleta (línea decorativa)
+    ctx.strokeStyle = '#0044AA';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(this.x + 10, this.y + this.height / 2);
+    ctx.lineTo(this.x + this.width - 10, this.y + this.height / 2);
+    ctx.stroke();
   }
 } 
