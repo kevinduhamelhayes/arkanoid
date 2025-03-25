@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arkanoid</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    canvas {
+      display: block;
+      border: 2px solid #333;
+      background-image: url('bkg.png');
+      background-repeat: repeat;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="640" height="480"></canvas>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Referencias al canvas y contexto
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Cargar imágenes
+      const bricksImg = new Image();
+      bricksImg.src = 'bricks.png';
+      
+      const spriteImg = new Image();
+      spriteImg.src = 'sprite.png';
+      
+      // Parámetros del juego
+      const gameState = {
+        score: 0,
+        lives: 3,
+        gameOver: false,
+        gamePaused: false,
+        levelCompleted: false
+      };
+      
+      // Configuración de la paleta
+      const paddle = {
+        x: canvas.width / 2 - 40,
+        y: canvas.height - 30,
+        width: 80,
+        height: 15,
+        dx: 8,
+        moving: false,
+        direction: 0 // -1 izquierda, 1 derecha, 0 sin movimiento
+      };
+      
+      // Configuración de la bola
+      const ball = {
+        x: canvas.width / 2,
+        y: canvas.height - 50,
+        radius: 8,
+        dx: 4,
+        dy: -4,
+        speed: 4,
+        inPlay: false
+      };
+      
+      // Configuración de los bloques
+      const brickRowCount = 8;
+      const brickColumnCount = 14;
+      const brickWidth = 40;
+      const brickHeight = 20;
+      const brickPadding = 2;
+      const brickOffsetTop = 60;
+      const brickOffsetLeft = 30;
+      
+      // Crear los bloques
+      const bricks = [];
+      for (let c = 0; c < brickColumnCount; c++) {
+        bricks[c] = [];
+        for (let r = 0; r < brickRowCount; r++) {
+          // Variar el tipo de bloque (color) según la fila
+          const brickType = Math.min(r, 7); // Tipos de 0 a 7 (8 tipos diferentes)
+          bricks[c][r] = { 
+            x: c * (brickWidth + brickPadding) + brickOffsetLeft, 
+            y: r * (brickHeight + brickPadding) + brickOffsetTop, 
+            status: 1, // 1 = activo, 0 = destruido
+            type: brickType
+          };
+        }
+      }
+      
+      // Control del teclado
+      let rightPressed = false;
+      let leftPressed = false;
+      
+      document.addEventListener('keydown', keyDownHandler);
+      document.addEventListener('keyup', keyUpHandler);
+      document.addEventListener('mousemove', mouseMoveHandler);
+      
+      function keyDownHandler(e) {
+        if (e.key === 'Right' || e.key === 'ArrowRight') {
+          rightPressed = true;
+        } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+          leftPressed = true;
+        } else if (e.key === ' ' || e.key === 'Spacebar') {
+          if (!ball.inPlay) {
+            ball.inPlay = true;
+          }
+          if (gameState.gameOver || gameState.levelCompleted) {
+            resetGame();
+          }
+        } else if (e.key === 'p' || e.key === 'P') {
+          gameState.gamePaused = !gameState.gamePaused;
+        }
+      }
+      
+      function keyUpHandler(e) {
+        if (e.key === 'Right' || e.key === 'ArrowRight') {
+          rightPressed = false;
+        } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+          leftPressed = false;
+        }
+      }
+      
+      function mouseMoveHandler(e) {
+        const relativeX = e.clientX - canvas.offsetLeft;
+        if (relativeX > 0 && relativeX < canvas.width) {
+          paddle.x = relativeX - paddle.width / 2;
+          
+          // Mantener la paleta dentro del canvas
+          if (paddle.x < 0) {
+            paddle.x = 0;
+          } else if (paddle.x + paddle.width > canvas.width) {
+            paddle.x = canvas.width - paddle.width;
+          }
+          
+          // Si la bola no está en juego, moverse con la paleta
+          if (!ball.inPlay) {
+            ball.x = paddle.x + paddle.width / 2;
+          }
+        }
+      }
+      
+      // Detectar colisión entre la bola y los bloques
+      function collisionDetection() {
+        for (let c = 0; c < brickColumnCount; c++) {
+          for (let r = 0; r < brickRowCount; r++) {
+            const brick = bricks[c][r];
+            if (brick.status === 1) {
+              if (
+                ball.x > brick.x && 
+                ball.x < brick.x + brickWidth && 
+                ball.y > brick.y && 
+                ball.y < brick.y + brickHeight
+              ) {
+                ball.dy = -ball.dy;
+                brick.status = 0;
+                gameState.score += (brick.type + 1) * 10; // Más puntos para bloques más difíciles
+                
+                // Verificar si se han eliminado todos los bloques
+                let bricksRemaining = 0;
+                for (let c = 0; c < brickColumnCount; c++) {
+                  for (let r = 0; r < brickRowCount; r++) {
+                    if (bricks[c][r].status === 1) {
+                      bricksRemaining++;
+                    }
+                  }
+                }
+                
+                if (bricksRemaining === 0) {
+                  gameState.levelCompleted = true;
+                  ball.inPlay = false;
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Dibujar la paleta
+      function drawPaddle() {
+        // Dibujamos la paleta del spritesheet
+        ctx.drawImage(
+          spriteImg, 
+          0, 160, // posición en el spritesheet
+          paddle.width, paddle.height, // tamaño en el spritesheet
+          paddle.x, paddle.y, // posición en el canvas
+          paddle.width, paddle.height // tamaño en el canvas
+        );
+      }
+      
+      // Dibujar la bola
+      function drawBall() {
+        // Dibujamos la bola del spritesheet
+        ctx.drawImage(
+          spriteImg,
+          160, 160, // posición en el spritesheet
+          16, 16, // tamaño en el spritesheet
+          ball.x - ball.radius, ball.y - ball.radius, // posición en el canvas
+          ball.radius * 2, ball.radius * 2 // tamaño en el canvas
+        );
+      }
+      
+      // Dibujar los bloques
+      function drawBricks() {
+        for (let c = 0; c < brickColumnCount; c++) {
+          for (let r = 0; r < brickRowCount; r++) {
+            if (bricks[c][r].status === 1) {
+              const brickX = bricks[c][r].x;
+              const brickY = bricks[c][r].y;
+              const brickType = bricks[c][r].type;
+              
+              // Dibujar el bloque del tipo correspondiente
+              ctx.drawImage(
+                bricksImg,
+                brickType * brickWidth, 0, // posición en el spritesheet
+                brickWidth, brickHeight, // tamaño en el spritesheet
+                brickX, brickY, // posición en el canvas
+                brickWidth, brickHeight // tamaño en el canvas
+              );
+            }
+          }
+        }
+      }
+      
+      // Dibujar la puntuación
+      function drawScore() {
+        ctx.font = '20px Arial';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(`Puntuación: ${gameState.score}`, 20, 30);
+      }
+      
+      // Dibujar las vidas
+      function drawLives() {
+        ctx.font = '20px Arial';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(`Vidas: ${gameState.lives}`, canvas.width - 100, 30);
+      }
+      
+      // Dibujar mensajes de estado
+      function drawStatus() {
+        if (gameState.gameOver) {
+          ctx.font = 'bold 36px Arial';
+          ctx.fillStyle = '#FF0000';
+          ctx.textAlign = 'center';
+          ctx.fillText('¡GAME OVER!', canvas.width / 2, canvas.height / 2);
+          ctx.font = '24px Arial';
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillText('Presiona ESPACIO para reiniciar', canvas.width / 2, canvas.height / 2 + 40);
+          ctx.textAlign = 'start';
+        } else if (gameState.levelCompleted) {
+          ctx.font = 'bold 36px Arial';
+          ctx.fillStyle = '#00FF00';
+          ctx.textAlign = 'center';
+          ctx.fillText('¡NIVEL COMPLETADO!', canvas.width / 2, canvas.height / 2);
+          ctx.font = '24px Arial';
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillText('Presiona ESPACIO para continuar', canvas.width / 2, canvas.height / 2 + 40);
+          ctx.textAlign = 'start';
+        } else if (gameState.gamePaused) {
+          ctx.font = 'bold 36px Arial';
+          ctx.fillStyle = '#FFFF00';
+          ctx.textAlign = 'center';
+          ctx.fillText('PAUSA', canvas.width / 2, canvas.height / 2);
+          ctx.font = '24px Arial';
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillText('Presiona P para continuar', canvas.width / 2, canvas.height / 2 + 40);
+          ctx.textAlign = 'start';
+        }
+      }
+      
+      // Actualizar la posición de la bola
+      function updateBall() {
+        if (!ball.inPlay) {
+          // Si la bola no está en juego, colocarla encima de la paleta
+          ball.x = paddle.x + paddle.width / 2;
+          ball.y = paddle.y - ball.radius;
+          return;
+        }
+        
+        // Mover la bola
+        ball.x += ball.dx;
+        ball.y += ball.dy;
+        
+        // Rebotar en las paredes laterales
+        if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+          ball.dx = -ball.dx;
+        }
+        
+        // Rebotar en la pared superior
+        if (ball.y - ball.radius < 0) {
+          ball.dy = -ball.dy;
+        }
+        
+        // Comprobar si la bola toca el fondo
+        if (ball.y + ball.radius > canvas.height) {
+          gameState.lives--;
+          
+          if (gameState.lives <= 0) {
+            gameState.gameOver = true;
+          } else {
+            ball.inPlay = false;
+            // Reiniciar posición de la bola
+            ball.x = paddle.x + paddle.width / 2;
+            ball.y = paddle.y - ball.radius;
+            ball.dx = ball.speed;
+            ball.dy = -ball.speed;
+          }
+        }
+        
+        // Comprobar colisión con la paleta
+        if (
+          ball.y + ball.radius > paddle.y &&
+          ball.y - ball.radius < paddle.y + paddle.height &&
+          ball.x > paddle.x &&
+          ball.x < paddle.x + paddle.width
+        ) {
+          // Calcular el punto de impacto relativo en la paleta (de -1 a 1)
+          const impactPoint = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+          
+          // Calcular el ángulo de rebote (de -60 a 60 grados)
+          const angle = impactPoint * Math.PI / 3; // 60 grados en radianes
+          
+          // Calcular la nueva dirección basada en el ángulo
+          ball.dx = ball.speed * Math.sin(angle);
+          ball.dy = -ball.speed * Math.cos(angle);
+          
+          // Asegurarnos de que la bola siempre suba
+          if (ball.dy > 0) {
+            ball.dy = -ball.dy;
+          }
+        }
+      }
+      
+      // Actualizar la posición de la paleta
+      function updatePaddle() {
+        if (rightPressed) {
+          paddle.x += paddle.dx;
+          if (paddle.x + paddle.width > canvas.width) {
+            paddle.x = canvas.width - paddle.width;
+          }
+        } else if (leftPressed) {
+          paddle.x -= paddle.dx;
+          if (paddle.x < 0) {
+            paddle.x = 0;
+          }
+        }
+        
+        // Si la bola no está en juego, actualizamos su posición con la paleta
+        if (!ball.inPlay) {
+          ball.x = paddle.x + paddle.width / 2;
+        }
+      }
+      
+      // Resetear el juego
+      function resetGame() {
+        // Reiniciar estado del juego
+        gameState.score = 0;
+        gameState.lives = 3;
+        gameState.gameOver = false;
+        gameState.levelCompleted = false;
+        
+        // Reiniciar la paleta
+        paddle.x = canvas.width / 2 - paddle.width / 2;
+        
+        // Reiniciar la bola
+        ball.x = paddle.x + paddle.width / 2;
+        ball.y = paddle.y - ball.radius;
+        ball.dx = ball.speed;
+        ball.dy = -ball.speed;
+        ball.inPlay = false;
+        
+        // Reiniciar los bloques
+        for (let c = 0; c < brickColumnCount; c++) {
+          for (let r = 0; r < brickRowCount; r++) {
+            bricks[c][r].status = 1;
+          }
+        }
+      }
+      
+      // Función principal de dibujo
+      function draw() {
+        // Limpiar el canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Dibujar elementos del juego
+        drawBricks();
+        drawPaddle();
+        drawBall();
+        drawScore();
+        drawLives();
+        drawStatus();
+        
+        // Actualizar estado del juego si no está pausado o terminado
+        if (!gameState.gamePaused && !gameState.gameOver && !gameState.levelCompleted) {
+          collisionDetection();
+          updatePaddle();
+          updateBall();
+        }
+        
+        // Continuar el bucle de juego
+        requestAnimationFrame(draw);
+      }
+      
+      // Comenzar el juego cuando las imágenes estén cargadas
+      let imagesLoaded = 0;
+      function handleImageLoad() {
+        imagesLoaded++;
+        if (imagesLoaded === 2) { // Tenemos 2 imágenes para cargar
+          draw();
+        }
+      }
+      
+      bricksImg.onload = handleImageLoad;
+      spriteImg.onload = handleImageLoad;
+      
+      // Instrucciones iniciales
+      console.log('Controles:');
+      console.log('- Usa las flechas izquierda/derecha o el ratón para mover la paleta');
+      console.log('- Presiona Espacio para lanzar la bola');
+      console.log('- Presiona P para pausar/reanudar el juego');
+    });
+  </script>
+</body>
+</html>
