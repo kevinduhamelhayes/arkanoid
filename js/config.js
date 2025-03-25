@@ -38,18 +38,28 @@ export const GAME_CONFIG = {
   },
   spritePositions: {
     paddle: {
-      normal: { x: 0, y: 160, width: 80, height: 15 },
-      expanded: { x: 0, y: 176, width: 100, height: 15 },
-      shrunk: { x: 0, y: 192, width: 60, height: 15 }
+      normal: { x: 8, y: 136, width: 80, height: 15 },
+      expanded: { x: 8, y: 152, width: 104, height: 15 },
+      shrunk: { x: 8, y: 168, width: 56, height: 15 }
     },
-    ball: { x: 160, y: 160, width: 16, height: 16 },
+    ball: { x: 96, y: 136, width: 16, height: 16 },
+    bricks: [
+      { x: 8,  y: 40, width: 40, height: 20 },  // Blanco (fila 0)
+      { x: 8,  y: 68, width: 40, height: 20 },  // Naranja (fila 1)
+      { x: 56, y: 40, width: 40, height: 20 },  // Azul claro (fila 2)
+      { x: 56, y: 68, width: 40, height: 20 },  // Verde (fila 3)
+      { x: 104, y: 40, width: 40, height: 20 }, // Rojo (fila 4)
+      { x: 104, y: 68, width: 40, height: 20 }, // Azul (fila 5)
+      { x: 152, y: 40, width: 40, height: 20 }, // Magenta (fila 6)
+      { x: 152, y: 68, width: 40, height: 20 }  // Amarillo (fila 7)
+    ],
     powerUps: {
-      'expand-paddle': { x: 32, y: 192, width: 24, height: 12 },
-      'shrink-paddle': { x: 56, y: 192, width: 24, height: 12 },
-      'slow-ball': { x: 80, y: 192, width: 24, height: 12 },
-      'fast-ball': { x: 104, y: 192, width: 24, height: 12 },
-      'multi-ball': { x: 128, y: 192, width: 24, height: 12 },
-      'extra-life': { x: 152, y: 192, width: 24, height: 12 }
+      'expand-paddle': { x: 128, y: 128, width: 24, height: 12 },
+      'shrink-paddle': { x: 152, y: 128, width: 24, height: 12 },
+      'slow-ball': { x: 176, y: 128, width: 24, height: 12 },
+      'fast-ball': { x: 200, y: 128, width: 24, height: 12 },
+      'multi-ball': { x: 224, y: 128, width: 24, height: 12 },
+      'extra-life': { x: 248, y: 128, width: 24, height: 12 }
     }
   }
 }; 

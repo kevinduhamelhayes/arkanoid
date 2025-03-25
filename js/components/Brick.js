@@ -70,15 +70,18 @@ export class Brick {
   /**
    * Dibuja el ladrillo en el canvas si está activo
    * @param {CanvasRenderingContext2D} ctx - Contexto del canvas
-   * @param {HTMLImageElement} bricksImg - Imagen de los ladrillos
+   * @param {HTMLImageElement} spriteImg - Imagen de sprites
    */
-  draw(ctx, bricksImg) {
+  draw(ctx, spriteImg) {
     if (this.status === 0) return;
     
+    // Obtenemos la posición del ladrillo en el sprite según su tipo
+    const brickSprite = GAME_CONFIG.spritePositions.bricks[this.type];
+    
     ctx.drawImage(
-      bricksImg,
-      this.type * this.width, 0, // posición en el spritesheet
-      this.width, this.height, // tamaño en el spritesheet
+      spriteImg,
+      brickSprite.x, brickSprite.y, // posición en el spritesheet
+      brickSprite.width, brickSprite.height, // tamaño en el spritesheet
       this.x, this.y, // posición en el canvas
       this.width, this.height // tamaño en el canvas
     );

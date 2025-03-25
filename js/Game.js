@@ -133,7 +133,7 @@ export class Game {
    * @private
    */
   _loadAssets() {
-    this.assetLoader.addImage('bricks', 'bricks.png');
+    // Cargamos solo el sprite principal que contiene todos los elementos
     this.assetLoader.addImage('sprite', 'sprite.png');
     
     this.assetLoader.onLoadComplete(() => {
@@ -403,12 +403,11 @@ export class Game {
     // Limpiar el canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
-    // Obtenemos las imágenes
-    const bricksImg = this.assetLoader.getImage('bricks');
+    // Obtenemos la imagen de sprites
     const spriteImg = this.assetLoader.getImage('sprite');
     
     // Dibujar los ladrillos
-    this.bricks.forEach(brick => brick.draw(this.ctx, bricksImg));
+    this.bricks.forEach(brick => brick.draw(this.ctx, spriteImg));
     
     // Dibujar los power-ups
     this.powerUps.forEach(powerUp => powerUp.draw(this.ctx, spriteImg));
