@@ -5,21 +5,21 @@ export const GAME_CONFIG = {
     height: 480
   },
   paddle: {
-    width: 80,
-    height: 15,
-    y: 450, // Posición Y fija para la paleta
+    width: 64,     // Corregido para que coincida con el sprite
+    height: 16,    // Corregido para que coincida con el sprite
+    y: 450,        // Posición Y fija para la paleta
     speed: 8
   },
   ball: {
-    radius: 8,
+    radius: 4,     // Reducido ya que la bola es más pequeña en el sprite
     initialSpeed: 4
   },
   bricks: {
     rowCount: 8,
     columnCount: 14,
     width: 40,
-    height: 20,
-    padding: 2,
+    height: 16,   // Ajustado para hacerlo más proporcionado con los sprites
+    padding: 4,   // Añadido padding para que se vean mejor separados
     offsetTop: 60,
     offsetLeft: 30
   },
@@ -37,29 +37,34 @@ export const GAME_CONFIG = {
     duration: 10000    // Duración de los efectos de power-up (10 segundos)
   },
   spritePositions: {
+    // Posiciones corregidas según el sprite.png
     paddle: {
-      normal: { x: 8, y: 136, width: 80, height: 15 },
-      expanded: { x: 8, y: 152, width: 104, height: 15 },
-      shrunk: { x: 8, y: 168, width: 56, height: 15 }
+      // La paleta usa una parte específica del sprite
+      normal: { x: 8, y: 252, width: 64, height: 16 },
+      expanded: { x: 80, y: 252, width: 96, height: 16 },
+      shrunk: { x: 8, y: 276, width: 48, height: 16 }
     },
-    ball: { x: 96, y: 136, width: 16, height: 16 },
+    // La bola es un círculo blanco pequeño
+    ball: { x: 188, y: 252, width: 8, height: 8 },
+    // Corregimos el arreglo de ladrillos según los colores en el sprite
     bricks: [
-      { x: 8,  y: 40, width: 40, height: 20 },  // Blanco (fila 0)
-      { x: 8,  y: 68, width: 40, height: 20 },  // Naranja (fila 1)
-      { x: 56, y: 40, width: 40, height: 20 },  // Azul claro (fila 2)
-      { x: 56, y: 68, width: 40, height: 20 },  // Verde (fila 3)
-      { x: 104, y: 40, width: 40, height: 20 }, // Rojo (fila 4)
-      { x: 104, y: 68, width: 40, height: 20 }, // Azul (fila 5)
-      { x: 152, y: 40, width: 40, height: 20 }, // Magenta (fila 6)
-      { x: 152, y: 68, width: 40, height: 20 }  // Amarillo (fila 7)
+      // Filas de ladrillos basados en la imagen bricks.png
+      { x: 0, y: 0, width: 40, height: 16 },     // Rojo
+      { x: 40, y: 0, width: 40, height: 16 },    // Naranja
+      { x: 80, y: 0, width: 40, height: 16 },    // Amarillo
+      { x: 120, y: 0, width: 40, height: 16 },   // Verde
+      { x: 160, y: 0, width: 40, height: 16 },   // Cyan
+      { x: 200, y: 0, width: 40, height: 16 },   // Azul
+      { x: 240, y: 0, width: 40, height: 16 },   // Morado
+      { x: 280, y: 0, width: 40, height: 16 }    // Gris
     ],
     powerUps: {
-      'expand-paddle': { x: 128, y: 128, width: 24, height: 12 },
-      'shrink-paddle': { x: 152, y: 128, width: 24, height: 12 },
-      'slow-ball': { x: 176, y: 128, width: 24, height: 12 },
-      'fast-ball': { x: 200, y: 128, width: 24, height: 12 },
-      'multi-ball': { x: 224, y: 128, width: 24, height: 12 },
-      'extra-life': { x: 248, y: 128, width: 24, height: 12 }
+      'expand-paddle': { x: 208, y: 252, width: 24, height: 12 },
+      'shrink-paddle': { x: 208, y: 268, width: 24, height: 12 },
+      'slow-ball': { x: 240, y: 252, width: 24, height: 12 },
+      'fast-ball': { x: 240, y: 268, width: 24, height: 12 },
+      'multi-ball': { x: 272, y: 252, width: 24, height: 12 },
+      'extra-life': { x: 272, y: 268, width: 24, height: 12 }
     }
   }
 }; 

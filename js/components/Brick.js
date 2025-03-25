@@ -70,20 +70,54 @@ export class Brick {
   /**
    * Dibuja el ladrillo en el canvas si está activo
    * @param {CanvasRenderingContext2D} ctx - Contexto del canvas
-   * @param {HTMLImageElement} spriteImg - Imagen de sprites
+   * @param {HTMLImageElement} bricksImg - Imagen de ladrillos
    */
-  draw(ctx, spriteImg) {
+  draw(ctx, bricksImg) {
     if (this.status === 0) return;
     
-    // Obtenemos la posición del ladrillo en el sprite según su tipo
-    const brickSprite = GAME_CONFIG.spritePositions.bricks[this.type];
+    // Obtenemos la posición del ladrillo en la imagen según su tipo
+    const brickPos = GAME_CONFIG.spritePositions.bricks[this.type];
     
-    ctx.drawImage(
-      spriteImg,
-      brickSprite.x, brickSprite.y, // posición en el spritesheet
-      brickSprite.width, brickSprite.height, // tamaño en el spritesheet
-      this.x, this.y, // posición en el canvas
-      this.width, this.height // tamaño en el canvas
-    );
+    try {
+      // Dibujamos el ladrillo desde la imagen
+      ctx.drawImage(
+        bricksImg,
+        brickPos.x, brickPos.y,       // posición en la imagen
+        brickPos.width, brickPos.height, // tamaño en la imagen
+        this.x, this.y,                // posición en el canvas
+        this.width, this.height        // tamaño en el canvas
+      );
+      
+      // Añadir un sutil efecto de brillo
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.fillRect(this.x, this.y, this.width, this.height / 4);
+    } catch (error) {
+      console.error('Error al dibujar un ladrillo:', error);
+      
+      // Plan de respaldo: dibujar un rectángulo coloreado
+      const colors = [
+        '#FF0000', // Rojo
+        '#FF7700', // Naranja
+        '#FFFF00', // Amarillo
+        '#00FF00', // Verde
+        '#00FFFF', // Cyan
+        '#0000FF', // Azul
+        '#FF00FF', // Magenta
+        '#AAAAAA'  // Gris
+      ];
+      
+      // Dibujamos un rectángulo con el color correspondiente
+      ctx.fillStyle = colors[this.type];
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+      
+      // Añadir efecto de brillo
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.fillRect(this.x, this.y, this.width, this.height / 4);
+      
+      // Añadir borde
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+    }
   }
 } 
